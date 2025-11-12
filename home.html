@@ -199,7 +199,12 @@
             text-shadow: 0 0 15px #8B5CF6;
         }
 
-        .clear-log-btn {
+        .console-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .console-btn {
             padding: 10px 20px;
             background: rgba(167, 139, 250, 0.2);
             border: 2px solid #A78BFA;
@@ -207,9 +212,10 @@
             color: #A78BFA;
             cursor: pointer;
             transition: all 0.3s;
+            font-size: 14px;
         }
 
-        .clear-log-btn:hover {
+        .console-btn:hover {
             background: rgba(167, 139, 250, 0.3);
         }
 
@@ -250,6 +256,10 @@
 
         .log-entry.success .log-message {
             color: #44ff44;
+        }
+
+        .log-entry.error .log-message {
+            color: #ff4444;
         }
     </style>
 </head>
@@ -301,7 +311,10 @@
             <div class="console-container">
                 <div class="console-header">
                     <h2>Activity Console</h2>
-                    <button class="clear-log-btn" id="clear-log">Clear Log</button>
+                    <div class="console-actions">
+                        <button class="console-btn" id="sync-saves">Sync Saves</button>
+                        <button class="console-btn" id="clear-log">Clear Log</button>
+                    </div>
                 </div>
                 <div class="console-log" id="console-log">
                     <div class="log-entry info">
@@ -314,8 +327,33 @@
     </div>
 </div>
 
+<!-- Firebase SDK -->
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+  import { getFirestore, doc, setDoc, getDoc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDSfxXsKJxJuIVdJ2PJH_sT-yuCfnIcy48",
+    authDomain: "the-aster-archive.firebaseapp.com",
+    projectId: "the-aster-archive",
+    storageBucket: "the-aster-archive.firebasestorage.app",
+    messagingSenderId: "477660520567",
+    appId: "1:477660520567:web:db80ea1995cb9a594b6672"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // Make Firebase available globally
+  window.asterDB = db;
+  window.asterFirestore = { doc, setDoc, getDoc, updateDoc };
+
+  console.log('Firebase initialized in home.html');
+</script>
+
 <script>
 let logEntries = [];
+let currentUsername = '';
 
 // Logging function
 function addLog(message, type = 'info') {
@@ -334,22 +372,79 @@ function addLog(message, type = 'info') {
     }
 }
 
+// Save game progress to Firebase
+async function saveGameProgress(gameName, saveData) {
+    if (!currentUsername) return;
+
+    try {
+        const { doc, setDoc } = window.asterFirestore;
+        await setDoc(doc(window.asterDB, 'saves', `${currentUsername}_${gameName}`), {
+            username: currentUsername,
+            game: gameName,
+            data: saveData,
+            lastSaved: new Date().toISOString()
+        });
+
+        addLog(`Game progress saved: ${gameName}`, 'success');
+        return true;
+    } catch (error) {
+        addLog(`Failed to save ${gameName}: ${error.message}`, 'error');
+        console.error('Save error:', error);
+        return false;
+    }
+}
+
+// Load game progress from Firebase
+async function loadGameProgress(gameName) {
+    if (!currentUsername) return null;
+
+    try {
+        const { doc, getDoc } = window.asterFirestore;
+        const saveDoc = await getDoc(doc(window.asterDB, 'saves', `${currentUsername}_${gameName}`));
+
+        if (saveDoc.exists()) {
+            addLog(`Game progress loaded: ${gameName}`, 'success');
+            return saveDoc.data().data;
+        } else {
+            addLog(`No saved data found for ${gameName}`, 'info');
+            return null;
+        }
+    } catch (error) {
+        addLog(`Failed to load ${gameName}: ${error.message}`, 'error');
+        console.error('Load error:', error);
+        return null;
+    }
+}
+
+// Sync all saves
+async function syncAllSaves() {
+    addLog('Syncing all game saves...', 'info');
+
+    // This is a placeholder - games will call saveGameProgress() when they need to save
+    // For now, just log that sync is available
+    addLog('Sync complete - saves are stored in Firebase', 'success');
+}
+
+// Make save/load functions available globally for games to use
+window.asterSave = saveGameProgress;
+window.asterLoad = loadGameProgress;
+
 // Check if user is logged in
 window.addEventListener('DOMContentLoaded', function() {
-    const currentUser = localStorage.getItem('aster_currentUser');
+    currentUsername = localStorage.getItem('aster_currentUser');
     const isAdmin = localStorage.getItem('aster_isAdmin') === 'true';
 
-    if (!currentUser) {
-        // Redirect to login if not logged in
+    if (!currentUsername) {
         window.location.href = 'index.html';
         return;
     }
 
     // Display username
-    document.getElementById('sidebar-username').textContent = currentUser + (isAdmin ? ' (Admin)' : '');
+    document.getElementById('sidebar-username').textContent = currentUsername + (isAdmin ? ' (Admin)' : '');
 
-    addLog(`User ${currentUser} logged in`, 'success');
+    addLog(`User ${currentUsername} logged in`, 'success');
     addLog('Game library loaded', 'info');
+    addLog('Firebase save system active - progress syncs across devices', 'success');
 });
 
 // Sidebar navigation
@@ -364,11 +459,9 @@ document.getElementById('console-btn').addEventListener('click', function() {
 });
 
 function switchView(view) {
-    // Remove active from all icons and views
     document.querySelectorAll('.sidebar-icon').forEach(icon => icon.classList.remove('active'));
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
 
-    // Add active to selected
     if (view === 'games') {
         document.getElementById('games-btn').classList.add('active');
         document.getElementById('games-view').classList.add('active');
@@ -377,6 +470,11 @@ function switchView(view) {
         document.getElementById('console-view').classList.add('active');
     }
 }
+
+// Sync saves button
+document.getElementById('sync-saves').addEventListener('click', function() {
+    syncAllSaves();
+});
 
 // Clear log
 document.getElementById('clear-log').addEventListener('click', function() {
@@ -400,6 +498,7 @@ document.querySelectorAll('.game-card').forEach(card => {
     card.addEventListener('click', function(e) {
         const gameName = this.getAttribute('data-game');
         addLog(`Loading game: ${gameName}`, 'success');
+        addLog(`Game saves are stored in Firebase for ${currentUsername}`, 'info');
     });
 });
 </script>

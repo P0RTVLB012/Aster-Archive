@@ -208,12 +208,35 @@
     </div>
 </div>
 
+<!-- Firebase SDK -->
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+  import { getFirestore, doc, setDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDSfxXsKJxJuIVdJ2PJH_sT-yuCfnIcy48",
+    authDomain: "the-aster-archive.firebaseapp.com",
+    projectId: "the-aster-archive",
+    storageBucket: "the-aster-archive.firebasestorage.app",
+    messagingSenderId: "477660520567",
+    appId: "1:477660520567:web:db80ea1995cb9a594b6672"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // Make db available globally
+  window.asterDB = db;
+  window.asterFirestore = { doc, setDoc, getDoc };
+
+  console.log('Firebase initialized successfully');
+</script>
+
 <script>
 // Check if user is already logged in
 window.addEventListener('DOMContentLoaded', function() {
     const currentUser = localStorage.getItem('aster_currentUser');
     if (currentUser) {
-        // Redirect to home if already logged in
         window.location.href = 'home.html';
     }
 });
@@ -240,7 +263,7 @@ document.getElementById('register-confirm').addEventListener('keydown', function
     if (e.key === 'Enter') registerUser();
 });
 
-function registerUser() {
+async function registerUser() {
     const username = document.getElementById('register-username').value.trim();
     const password = document.getElementById('register-password').value;
     const confirm = document.getElementById('register-confirm').value;
@@ -263,7 +286,7 @@ function registerUser() {
         return;
     }
 
-    // Check if user already exists
+    // Check if user exists locally
     const existingUser = localStorage.getItem('aster_user_' + username);
     if (existingUser) {
         document.getElementById('register-error').textContent = 'Username already exists!';
@@ -271,20 +294,33 @@ function registerUser() {
         return;
     }
 
-    // Save user
-    localStorage.setItem('aster_user_' + username, password);
-    localStorage.setItem('aster_created_' + username, new Date().toISOString());
+    try {
+        // Save to Firestore
+        const { doc, setDoc } = window.asterFirestore;
+        await setDoc(doc(window.asterDB, 'users', username), {
+            password: password,
+            createdAt: new Date().toISOString(),
+            isAdmin: false
+        });
 
-    document.getElementById('register-error').style.display = 'none';
-    document.getElementById('register-success').style.display = 'block';
+        // Also save locally
+        localStorage.setItem('aster_user_' + username, password);
+        localStorage.setItem('aster_created_' + username, new Date().toISOString());
 
-    // Clear form and switch to login
-    setTimeout(function() {
-        document.getElementById('register-username').value = '';
-        document.getElementById('register-password').value = '';
-        document.getElementById('register-confirm').value = '';
-        document.getElementById('show-login').click();
-    }, 1500);
+        document.getElementById('register-error').style.display = 'none';
+        document.getElementById('register-success').style.display = 'block';
+
+        setTimeout(function() {
+            document.getElementById('register-username').value = '';
+            document.getElementById('register-password').value = '';
+            document.getElementById('register-confirm').value = '';
+            document.getElementById('show-login').click();
+        }, 1500);
+    } catch (error) {
+        console.error('Registration error:', error);
+        document.getElementById('register-error').textContent = 'Registration failed. Please try again.';
+        document.getElementById('register-error').style.display = 'block';
+    }
 }
 
 // Login
@@ -316,15 +352,28 @@ async function loginUser() {
                 return;
             }
         } catch (error) {
-            console.log('Admin account not found, checking local users');
+            console.log('Admin account not found');
         }
     }
 
-    // Check local storage for regular users
-    const storedPassword = localStorage.getItem('aster_user_' + username);
+    try {
+        // Try Firestore first
+        const { doc, getDoc } = window.asterFirestore;
+        const userDoc = await getDoc(doc(window.asterDB, 'users', username));
 
+        if (userDoc.exists() && userDoc.data().password === password) {
+            localStorage.setItem('aster_currentUser', username);
+            localStorage.setItem('aster_isAdmin', 'false');
+            window.location.href = 'home.html';
+            return;
+        }
+    } catch (error) {
+        console.log('Firestore check failed, trying localStorage');
+    }
+
+    // Fallback to localStorage
+    const storedPassword = localStorage.getItem('aster_user_' + username);
     if (storedPassword === password) {
-        // Login successful
         localStorage.setItem('aster_currentUser', username);
         localStorage.setItem('aster_isAdmin', 'false');
         window.location.href = 'home.html';

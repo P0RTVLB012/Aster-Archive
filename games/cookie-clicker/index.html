@@ -23,14 +23,31 @@
   window.firebaseReady = true;
 
   console.log('Firebase initialized for Cookie Clicker');
+
+  // Pre-load save data from Firebase
+  const currentUser = localStorage.getItem('aster_currentUser') || 'guest';
+  const saveKeys = ['CookieClickerGame', 'CookieClickerGameBeta', 'CookieClickerGameBetaDungeons'];
+
+  for (const key of saveKeys) {
+    try {
+      const saveDoc = await getDoc(doc(db, 'saves', `${currentUser}_cookieclicker_${key}`));
+      if (saveDoc.exists()) {
+        const data = saveDoc.data().data;
+        window.localStorage.setItem(key, data);
+        console.log('Pre-loaded from Firebase:', key);
+      }
+    } catch (error) {
+      console.log('Could not pre-load:', key);
+    }
+  }
 </script>
 
 <!-- Override localStorage functions BEFORE main.js loads -->
 <script>
-// Get current username from parent window
+// Get current username
 const currentUser = localStorage.getItem('aster_currentUser') || 'guest';
 
-// Override localStorage to use Firebase
+// Keep original functions
 const originalLocalStorageGet = function(key) {
     let local = '';
     try { local = window.localStorage.getItem(key); } catch (exception) {}
@@ -43,53 +60,33 @@ const originalLocalStorageSet = function(key, str) {
     return local;
 };
 
-// New functions that use Firebase + localStorage as backup
-window.localStorageGet = async function(key) {
-    console.log('Getting from storage:', key);
-
-    // Try Firebase first if it's a save file
-    if (key.includes('CookieClickerGame') && window.firebaseReady) {
-        try {
-            const { doc, getDoc } = window.asterFirestore;
-            const saveDoc = await getDoc(doc(window.asterDB, 'saves', `${currentUser}_cookieclicker_${key}`));
-
-            if (saveDoc.exists()) {
-                const data = saveDoc.data().data;
-                console.log('Loaded from Firebase:', key);
-                // Also save to localStorage as cache
-                originalLocalStorageSet(key, data);
-                return data;
-            }
-        } catch (error) {
-            console.log('Firebase load failed, using localStorage:', error);
-        }
-    }
-
-    // Fallback to localStorage
+// Synchronous wrappers that use localStorage immediately, then sync to Firebase in background
+window.localStorageGet = function(key) {
+    // Always return localStorage immediately (synchronous)
     return originalLocalStorageGet(key);
 };
 
-window.localStorageSet = async function(key, str) {
-    console.log('Saving to storage:', key);
-
-    // Always save to localStorage first (immediate)
+window.localStorageSet = function(key, str) {
+    // Save to localStorage immediately (synchronous)
     originalLocalStorageSet(key, str);
 
-    // Then save to Firebase if it's a save file
+    // Then save to Firebase in the background (async, non-blocking)
     if (key.includes('CookieClickerGame') && window.firebaseReady) {
-        try {
-            const { doc, setDoc } = window.asterFirestore;
-            await setDoc(doc(window.asterDB, 'saves', `${currentUser}_cookieclicker_${key}`), {
-                username: currentUser,
-                game: 'Cookie Clicker',
-                key: key,
-                data: str,
-                lastSaved: new Date().toISOString()
-            });
-            console.log('Saved to Firebase:', key);
-        } catch (error) {
-            console.error('Firebase save failed:', error);
-        }
+        setTimeout(async () => {
+            try {
+                const { doc, setDoc } = window.asterFirestore;
+                await setDoc(doc(window.asterDB, 'saves', `${currentUser}_cookieclicker_${key}`), {
+                    username: currentUser,
+                    game: 'Cookie Clicker',
+                    key: key,
+                    data: str,
+                    lastSaved: new Date().toISOString()
+                });
+                console.log('✓ Synced to Firebase:', key);
+            } catch (error) {
+                console.error('✗ Firebase sync failed:', error);
+            }
+        }, 0);
     }
 
     return '';
@@ -108,7 +105,7 @@ console.log('Firebase localStorage override active for user:', currentUser);
 
 <link href='https://fonts.googleapis.com/css?family=Merriweather:900&subset=latin,latin-ext' rel='stylesheet' type='text/css'>
 
-<title>Cookie Clicker</title>
+<title>Cookie Clicker - Aster Archive</title>
 
 <meta name="viewport" content="width=900, initial-scale=1">
 <link rel="shortcut icon" href="img/favicon.ico" />
@@ -140,11 +137,11 @@ var App=typeof App==='undefined'?0:App;
 
         <div id="topBar">
                 <div><b style="font-weight:bold;">Cookie Clicker</b>&trade; - Aster Archive Edition</div>
-                <div style="color: #A78BFA;">Saves sync across devices!</div>
+                <div style="color: #A78BFA;">Your saves sync across devices via Firebase!</div>
         </div>
         <div id="game">
                 <div id="versionNumber" class="title"></div>
-                <script>document.getElementById('versionNumber').innerHTML='v. '+VERSION+' (Firebase)';</script>
+                <script>document.getElementById('versionNumber').innerHTML='v. '+VERSION+' (Firebase Sync)';</script>
                 <div id="offGameMessageWrap">
                         <div id="offGameMessage">
                                 <div id="loader">

@@ -113,7 +113,109 @@ var App=typeof App==='undefined'?0:App;
 </script>
 
 <link href="style.css?v=9" rel="stylesheet" type="text/css">
+
+<script>
+var VERSION=2.052;
+var BETA=0;
+var App=typeof App==='undefined'?0:App;
+</script>
+
+<link href="style.css?v=9" rel="stylesheet" type="text/css">
+
+<!-- ✅ Firebase + localStorage injection -->
+<script type="module">
+/* Firebase + localStorage interception for Cookie Clicker */
+
+console.log('🔥 Firebase injector starting...');
+
+try {
+  const { initializeApp } = await import('https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js');
+  const {
+    getFirestore,
+    doc,
+    setDoc,
+    getDoc,
+    collection,
+    query,
+    where,
+    getDocs
+  } = await import('https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore.js');
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDSfxXsKJxJuIVdJ2PJH_sT-yuCfnIcy48",
+    authDomain: "the-aster-archive.firebaseapp.com",
+    projectId: "the-aster-archive",
+    storageBucket: "the-aster-archive.firebasestorage.app",
+    messagingSenderId: "477660520567",
+    appId: "1:477660520567:web:082a0fbe81396cd54b6672",
+    measurementId: "G-8X69EF1421"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  window.asterDB = db;
+  window.firebaseReady = true;
+  console.log('🔥 Firebase fully initialized!');
+
+  const currentUser = localStorage.getItem('aster_currentUser') || 'guest';
+  const origSetItem = Storage.prototype.setItem;
+  const origGetItem = Storage.prototype.getItem;
+
+  async function pushSaveToFirestore(key, value) {
+    try {
+      const docId = `${currentUser}_cookieclicker_${key}`;
+      await setDoc(doc(db, 'saves', docId), {
+        username: currentUser,
+        game: 'Cookie Clicker',
+        key: key,
+        data: value,
+        lastSaved: new Date().toISOString()
+      }, { merge: true });
+      console.log('✓ Synced to Firebase:', key);
+    } catch (err) {
+      console.error('✗ Firebase sync failed:', err);
+    }
+  }
+
+  Storage.prototype.setItem = function(key, value) {
+    origSetItem.apply(this, [key, value]);
+    if (key && key.toLowerCase().includes('cookieclicker')) {
+      pushSaveToFirestore(key, value);
+    }
+  };
+
+  Storage.prototype.getItem = function(key) {
+    return origGetItem.apply(this, [key]);
+  };
+
+  async function hydrateFromFirestore() {
+    try {
+      const q = query(collection(db, 'saves'),
+        where('username', '==', currentUser),
+        where('game', '==', 'Cookie Clicker'));
+      const snap = await getDocs(q);
+      let count = 0;
+      snap.forEach(docSnap => {
+        const rec = docSnap.data();
+        if (rec?.key && rec?.data) {
+          origSetItem.apply(localStorage, [rec.key, rec.data]);
+          count++;
+        }
+      });
+      console.log(`💾 Hydrated ${count} save(s) from Firestore for ${currentUser}`);
+    } catch (err) {
+      console.error('Firestore hydrate error:', err);
+    }
+  }
+
+  hydrateFromFirestore();
+} catch (err) {
+  console.error('Firebase injector failed:', err);
+}
+</script>
+
 <script  src="main.js?v=10"></script>
+
 
 <!-- ad -->
 <script src="showads.js"></script>

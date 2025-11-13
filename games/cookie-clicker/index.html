@@ -22,18 +22,7 @@
   window.asterFirestore = { doc, setDoc, getDoc };
   window.firebaseReady = true;
 
-  const currentUser = localStorage.getItem('aster_currentUser') || 'guest';
-  const saveKeys = ['CookieClickerGame', 'CookieClickerGameBeta'];
 
-  for (const key of saveKeys) {
-    try {
-      const saveDoc = await getDoc(doc(db, 'saves', `${currentUser}_cookieclicker_${key}`));
-      if (saveDoc.exists()) {
-        window.localStorage.setItem(key, saveDoc.data().data);
-        console.log('Pre-loaded from Firebase:', key);
-      }
-    } catch (error) {}
-  }
 </script>
 
 <script>

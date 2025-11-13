@@ -3,6 +3,7 @@
 <head>
 <!-- Firebase SDK for Aster Archive -->
 <script type="module">
+console.log('🔥 Firebase script starting...');
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
   import { getFirestore, doc, setDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
@@ -21,8 +22,6 @@
   window.asterDB = db;
   window.asterFirestore = { doc, setDoc, getDoc };
   window.firebaseReady = true;
-
-
 </script>
 
 <script>

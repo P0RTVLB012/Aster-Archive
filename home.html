@@ -602,32 +602,6 @@
             </div>
         </div>
 
-        <!-- The Bud View -->
-        <div class="view" id="bud-view">
-            <div class="bud-container">
-                <div class="bud-todo-section">
-                    <div class="bud-todo-header">
-                        <h2>📝 To-Do List</h2>
-                    </div>
-                    <div class="bud-add-todo">
-                        <input type="text" id="bud-todo-input" placeholder="Add a new task..." />
-                        <button id="bud-add-todo-btn">Add</button>
-                    </div>
-                    <div class="bud-todo-list" id="bud-todo-list"></div>
-                </div>
-
-                <div class="bud-spacer"></div>
-
-                <div class="bud-links-section">
-                    <div class="bud-links-header">
-                        <h2>🔗 Pinned Links</h2>
-                        <button class="bud-add-link-btn" id="bud-add-link-btn">+ Add Link</button>
-                    </div>
-                    <div class="bud-links-grid" id="bud-links-grid"></div>
-                </div>
-            </div>
-        </div>
-
         <!-- Console View -->
         <div class="view" id="console-view">
             <div class="console-container">
@@ -645,20 +619,6 @@
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
-</div>
-
-<!-- Add Link Modal for The Bud -->
-<div class="bud-modal" id="bud-link-modal">
-    <div class="bud-modal-content">
-        <h3>Add New Link</h3>
-        <input type="text" id="bud-link-name-input" placeholder="Link name (e.g., YouTube)" />
-        <input type="text" id="bud-link-url-input" placeholder="URL (e.g., https://youtube.com)" />
-        <input type="text" id="bud-link-icon-input" placeholder="Emoji icon (e.g., 🎥)" />
-        <div class="bud-modal-buttons">
-            <button class="save" id="bud-save-link-btn">Save</button>
-            <button class="cancel" id="bud-cancel-link-btn">Cancel</button>
         </div>
     </div>
 </div>
@@ -690,8 +650,6 @@
 <script>
 let logEntries = [];
 let currentUsername = '';
-let budTodos = [];
-let budLinks = [];
 
 // Logging function
 function addLog(message, type = 'info') {
@@ -792,9 +750,8 @@ document.getElementById('games-btn').addEventListener('click', function() {
 });
 
 document.getElementById('bud-btn').addEventListener('click', function() {
-    switchView('bud');
+    window.location.href = 'bud/index.html';
     addLog('Opened The Bud', 'info');
-    loadBudData();
 });
 
 document.getElementById('console-btn').addEventListener('click', function() {
@@ -809,9 +766,6 @@ function switchView(view) {
     if (view === 'games') {
         document.getElementById('games-btn').classList.add('active');
         document.getElementById('games-view').classList.add('active');
-    } else if (view === 'bud') {
-        document.getElementById('bud-btn').classList.add('active');
-        document.getElementById('bud-view').classList.add('active');
     } else if (view === 'console') {
         document.getElementById('console-btn').classList.add('active');
         document.getElementById('console-view').classList.add('active');
@@ -848,172 +802,6 @@ document.querySelectorAll('.game-card').forEach(card => {
         addLog(`Game saves are stored in Firebase for ${currentUsername}`, 'info');
     });
 });
-
-// === THE BUD FUNCTIONALITY ===
-
-// Load Bud data from Firebase
-async function loadBudData() {
-    try {
-        const { doc, getDoc } = window.asterFirestore;
-
-        const todoDoc = await getDoc(doc(window.asterDB, 'bud', `${currentUsername}_todos`));
-        if (todoDoc.exists()) {
-            budTodos = todoDoc.data().todos || [];
-        }
-
-        const linksDoc = await getDoc(doc(window.asterDB, 'bud', `${currentUsername}_links`));
-        if (linksDoc.exists()) {
-            budLinks = linksDoc.data().links || [];
-        }
-
-        renderBudTodos();
-        renderBudLinks();
-        addLog('Loaded The Bud data', 'success');
-    } catch (error) {
-        addLog('Failed to load Bud data', 'error');
-    }
-}
-
-// Save todos to Firebase
-async function saveBudTodos() {
-    try {
-        const { doc, setDoc } = window.asterFirestore;
-        await setDoc(doc(window.asterDB, 'bud', `${currentUsername}_todos`), {
-            username: currentUsername,
-            todos: budTodos,
-            lastSaved: new Date().toISOString()
-        });
-        addLog('Saved todos to Firebase', 'success');
-    } catch (error) {
-        addLog('Failed to save todos', 'error');
-    }
-}
-
-// Save links to Firebase
-async function saveBudLinks() {
-    try {
-        const { doc, setDoc } = window.asterFirestore;
-        await setDoc(doc(window.asterDB, 'bud', `${currentUsername}_links`), {
-            username: currentUsername,
-            links: budLinks,
-            lastSaved: new Date().toISOString()
-        });
-        addLog('Saved links to Firebase', 'success');
-    } catch (error) {
-        addLog('Failed to save links', 'error');
-    }
-}
-
-// Render todos
-function renderBudTodos() {
-    const todoList = document.getElementById('bud-todo-list');
-    todoList.innerHTML = '';
-
-    budTodos.forEach((todo, index) => {
-        const todoItem = document.createElement('div');
-        todoItem.className = `bud-todo-item ${todo.completed ? 'completed' : ''}`;
-        todoItem.innerHTML = `
-            <input type="checkbox" ${todo.completed ? 'checked' : ''}>
-            <span>${todo.text}</span>
-            <button>×</button>
-        `;
-
-        todoItem.querySelector('input').addEventListener('change', () => toggleBudTodo(index));
-        todoItem.querySelector('button').addEventListener('click', () => deleteBudTodo(index));
-
-        todoList.appendChild(todoItem);
-    });
-}
-
-// Render links
-function renderBudLinks() {
-    const linksGrid = document.getElementById('bud-links-grid');
-    linksGrid.innerHTML = '';
-
-    budLinks.forEach((link, index) => {
-        const linkItem = document.createElement('a');
-        linkItem.className = 'bud-link-item';
-        linkItem.href = link.url;
-        linkItem.target = '_blank';
-        linkItem.innerHTML = `
-            <button class="bud-remove-link">×</button>
-            <div class="bud-link-icon">${link.icon}</div>
-            <div class="bud-link-name">${link.name}</div>
-        `;
-
-        linkItem.querySelector('button').addEventListener('click', (e) => {
-            e.preventDefault();
-            deleteBudLink(index);
-        });
-
-        linksGrid.appendChild(linkItem);
-    });
-}
-
-// Add todo
-document.getElementById('bud-add-todo-btn').addEventListener('click', addBudTodo);
-document.getElementById('bud-todo-input').addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') addBudTodo();
-});
-
-function addBudTodo() {
-    const input = document.getElementById('bud-todo-input');
-    const text = input.value.trim();
-
-    if (text) {
-        budTodos.push({ text, completed: false });
-        input.value = '';
-        renderBudTodos();
-        saveBudTodos();
-    }
-}
-
-// Toggle todo
-function toggleBudTodo(index) {
-    budTodos[index].completed = !budTodos[index].completed;
-    renderBudTodos();
-    saveBudTodos();
-}
-
-// Delete todo
-function deleteBudTodo(index) {
-    budTodos.splice(index, 1);
-    renderBudTodos();
-    saveBudTodos();
-}
-
-// Add link modal
-document.getElementById('bud-add-link-btn').addEventListener('click', () => {
-    document.getElementById('bud-link-modal').classList.add('active');
-});
-
-document.getElementById('bud-cancel-link-btn').addEventListener('click', () => {
-    document.getElementById('bud-link-modal').classList.remove('active');
-});
-
-document.getElementById('bud-save-link-btn').addEventListener('click', () => {
-    const name = document.getElementById('bud-link-name-input').value.trim();
-    const url = document.getElementById('bud-link-url-input').value.trim();
-    const icon = document.getElementById('bud-link-icon-input').value.trim() || '🔗';
-
-    if (name && url) {
-        budLinks.push({ name, url, icon });
-        renderBudLinks();
-        saveBudLinks();
-
-        document.getElementById('bud-link-name-input').value = '';
-        document.getElementById('bud-link-url-input').value = '';
-        document.getElementById('bud-link-icon-input').value = '';
-        document.getElementById('bud-link-modal').classList.remove('active');
-    }
-});
-
-// Delete link
-function deleteBudLink(index) {
-    budLinks.splice(index, 1);
-    renderBudLinks();
-    saveBudLinks();
-}
 </script>
 
 </body>

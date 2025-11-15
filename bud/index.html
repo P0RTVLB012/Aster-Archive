@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>The Bud - Aster Archive</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)),
+                        url('background.jpg') center/cover no-repeat fixed;
+        }
+
+        .container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            padding: 40px;
+        }
+
+        /* Todo List at Top */
+        .todo-section {
+            background: rgba(167, 139, 250, 0.15);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(167, 139, 250, 0.5);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .todo-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .todo-header h2 {
+            color: #C4B5FD;
+            font-size: 24px;
+            text-shadow: 0 0 10px rgba(139, 92, 246, 0.5);
+        }
+
+        .add-todo {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .add-todo input {
+            flex: 1;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 2px solid #A78BFA;
+            border-radius: 5px;
+            color: #C4B5FD;
+            outline: none;
+        }
+
+        .add-todo input::placeholder {
+            color: #888;
+        }
+
+        .add-todo button {
+            padding: 10px 20px;
+            background: #A78BFA;
+            border: none;
+            border-radius: 5px;
+            color: #111;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .add-todo button:hover {
+            background: #8B5CF6;
+            transform: translateY(-2px);
+        }
+
+        .todo-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .todo-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(167, 139, 250, 0.3);
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .todo-item:hover {
+            background: rgba(167, 139, 250, 0.1);
+            border-color: #A78BFA;
+        }
+
+        .todo-item input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .todo-item span {
+            flex: 1;
+            color: #C4B5FD;
+        }
+
+        .todo-item.completed span {
+            text-decoration: line-through;
+            opacity: 0.5;
+        }
+
+        .todo-item button {
+            padding: 5px 10px;
+            background: rgba(255, 68, 68, 0.2);
+            border: 1px solid #ff4444;
+            border-radius: 5px;
+            color: #ff4444;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .todo-item button:hover {
+            background: rgba(255, 68, 68, 0.4);
+        }
+
+        /* Spacer */
+        .spacer {
+            flex: 1;
+        }
+
+        /* Pinned Links at Bottom */
+        .links-section {
+            background: rgba(167, 139, 250, 0.15);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(167, 139, 250, 0.5);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .links-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .links-header h2 {
+            color: #C4B5FD;
+            font-size: 24px;
+            text-shadow: 0 0 10px rgba(139, 92, 246, 0.5);
+        }
+
+        .add-link-btn {
+            padding: 8px 16px;
+            background: #A78BFA;
+            border: none;
+            border-radius: 5px;
+            color: #111;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .add-link-btn:hover {
+            background: #8B5CF6;
+        }
+
+        .links-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 15px;
+        }
+
+        .link-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(167, 139, 250, 0.3);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            position: relative;
+        }
+
+        .link-item:hover {
+            background: rgba(167, 139, 250, 0.2);
+            border-color: #A78BFA;
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(139, 92, 246, 0.3);
+        }
+
+        .link-icon {
+            font-size: 32px;
+        }
+
+        .link-name {
+            color: #C4B5FD;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .remove-link {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            width: 20px;
+            height: 20px;
+            background: rgba(255, 68, 68, 0.8);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 12px;
+            cursor: pointer;
+            display: none;
+        }
+
+        .link-item:hover .remove-link {
+            display: block;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: rgba(167, 139, 250, 0.15);
+            backdrop-filter: blur(20px);
+            border: 2px solid #A78BFA;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .modal-content h3 {
+            color: #C4B5FD;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px rgba(139, 92, 246, 0.5);
+        }
+
+        .modal-content input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 2px solid #A78BFA;
+            border-radius: 5px;
+            color: #C4B5FD;
+            outline: none;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .modal-buttons button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .modal-buttons .save {
+            background: #A78BFA;
+            color: #111;
+        }
+
+        .modal-buttons .cancel {
+            background: rgba(255, 68, 68, 0.3);
+            color: #ff4444;
+            border: 2px solid #ff4444;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #A78BFA;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Todo List -->
+    <div class="todo-section">
+        <div class="todo-header">
+            <h2>📝 To-Do List</h2>
+        </div>
+        <div class="add-todo">
+            <input type="text" id="todo-input" placeholder="Add a new task..." />
+            <button id="add-todo-btn">Add</button>
+        </div>
+        <div class="todo-list" id="todo-list">
+            <!-- Todos will be added here -->
+        </div>
+    </div>
+
+    <!-- Spacer -->
+    <div class="spacer"></div>
+
+    <!-- Pinned Links -->
+    <div class="links-section">
+        <div class="links-header">
+            <h2>🔗 Pinned Links</h2>
+            <button class="add-link-btn" id="add-link-btn">+ Add Link</button>
+        </div>
+        <div class="links-grid" id="links-grid">
+            <!-- Links will be added here -->
+        </div>
+    </div>
+</div>
+
+<!-- Add Link Modal -->
+<div class="modal" id="link-modal">
+    <div class="modal-content">
+        <h3>Add New Link</h3>
+        <input type="text" id="link-name-input" placeholder="Link name (e.g., YouTube)" />
+        <input type="text" id="link-url-input" placeholder="URL (e.g., https://youtube.com)" />
+        <input type="text" id="link-icon-input" placeholder="Emoji icon (e.g., 🎥)" />
+        <div class="modal-buttons">
+            <button class="save" id="save-link-btn">Save</button>
+            <button class="cancel" id="cancel-link-btn">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<!-- Firebase SDK -->
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js';
+  import { getFirestore, doc, setDoc, getDoc } from 'https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore.js';
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDSfxXsKJxJuIVdJ2PJH_sT-yuCfnIcy48",
+    authDomain: "the-aster-archive.firebaseapp.com",
+    projectId: "the-aster-archive",
+    storageBucket: "the-aster-archive.firebasestorage.app",
+    messagingSenderId: "477660520567",
+    appId: "1:477660520567:web:082a0fbe81396cd54b6672",
+    measurementId: "G-8X69EF1421"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  window.asterDB = db;
+  window.asterFirestore = { doc, setDoc, getDoc };
+  window.firebaseReady = true;
+</script>
+
+<script>
+const currentUser = localStorage.getItem('aster_currentUser') || 'guest';
+let todos = [];
+let links = [];
+
+// Redirect if not logged in
+if (!currentUser || currentUser === 'guest') {
+    window.location.href = '../index.html';
+}
+
+// Load data from Firebase
+async function loadData() {
+    try {
+        const { doc, getDoc } = window.asterFirestore;
+
+        // Load todos
+        const todoDoc = await getDoc(doc(window.asterDB, 'bud', `${currentUser}_todos`));
+        if (todoDoc.exists()) {
+            todos = todoDoc.data().todos || [];
+        }
+
+        // Load links
+        const linksDoc = await getDoc(doc(window.asterDB, 'bud', `${currentUser}_links`));
+        if (linksDoc.exists()) {
+            links = linksDoc.data().links || [];
+        }
+
+        renderTodos();
+        renderLinks();
+    } catch (error) {
+        console.error('Failed to load data:', error);
+    }
+}
+
+// Save todos to Firebase
+async function saveTodos() {
+    try {
+        const { doc, setDoc } = window.asterFirestore;
+        await setDoc(doc(window.asterDB, 'bud', `${currentUser}_todos`), {
+            username: currentUser,
+            todos: todos,
+            lastSaved: new Date().toISOString()
+        });
+    } catch (error) {
+        console.error('Failed to save todos:', error);
+    }
+}
+
+// Save links to Firebase
+async function saveLinks() {
+    try {
+        const { doc, setDoc } = window.asterFirestore;
+        await setDoc(doc(window.asterDB, 'bud', `${currentUser}_links`), {
+            username: currentUser,
+            links: links,
+            lastSaved: new Date().toISOString()
+        });
+    } catch (error) {
+        console.error('Failed to save links:', error);
+    }
+}
+
+// Render todos
+function renderTodos() {
+    const todoList = document.getElementById('todo-list');
+    todoList.innerHTML = '';
+
+    todos.forEach((todo, index) => {
+        const todoItem = document.createElement('div');
+        todoItem.className = `todo-item ${todo.completed ? 'completed' : ''}`;
+        todoItem.innerHTML = `
+            <input type="checkbox" ${todo.completed ? 'checked' : ''} onchange="toggleTodo(${index})">
+            <span>${todo.text}</span>
+            <button onclick="deleteTodo(${index})">×</button>
+        `;
+        todoList.appendChild(todoItem);
+    });
+}
+
+// Render links
+function renderLinks() {
+    const linksGrid = document.getElementById('links-grid');
+    linksGrid.innerHTML = '';
+
+    links.forEach((link, index) => {
+        const linkItem = document.createElement('a');
+        linkItem.className = 'link-item';
+        linkItem.href = link.url;
+        linkItem.target = '_blank';
+        linkItem.innerHTML = `
+            <button class="remove-link" onclick="deleteLink(${index}); event.preventDefault();">×</button>
+            <div class="link-icon">${link.icon}</div>
+            <div class="link-name">${link.name}</div>
+        `;
+        linksGrid.appendChild(linkItem);
+    });
+}
+
+// Add todo
+document.getElementById('add-todo-btn').addEventListener('click', addTodo);
+document.getElementById('todo-input').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') addTodo();
+});
+
+function addTodo() {
+    const input = document.getElementById('todo-input');
+    const text = input.value.trim();
+
+    if (text) {
+        todos.push({ text, completed: false });
+        input.value = '';
+        renderTodos();
+        saveTodos();
+    }
+}
+
+// Toggle todo
+window.toggleTodo = function(index) {
+    todos[index].completed = !todos[index].completed;
+    renderTodos();
+    saveTodos();
+};
+
+// Delete todo
+window.deleteTodo = function(index) {
+    todos.splice(index, 1);
+    renderTodos();
+    saveTodos();
+};
+
+// Add link modal
+document.getElementById('add-link-btn').addEventListener('click', () => {
+    document.getElementById('link-modal').classList.add('active');
+});
+
+document.getElementById('cancel-link-btn').addEventListener('click', () => {
+    document.getElementById('link-modal').classList.remove('active');
+});
+
+document.getElementById('save-link-btn').addEventListener('click', () => {
+    const name = document.getElementById('link-name-input').value.trim();
+    const url = document.getElementById('link-url-input').value.trim();
+    const icon = document.getElementById('link-icon-input').value.trim() || '🔗';
+
+    if (name && url) {
+        links.push({ name, url, icon });
+        renderLinks();
+        saveLinks();
+
+        document.getElementById('link-name-input').value = '';
+        document.getElementById('link-url-input').value = '';
+        document.getElementById('link-icon-input').value = '';
+        document.getElementById('link-modal').classList.remove('active');
+    }
+});
+
+// Delete link
+window.deleteLink = function(index) {
+    links.splice(index, 1);
+    renderLinks();
+    saveLinks();
+};
+
+// Load data on page load
+window.addEventListener('DOMContentLoaded', loadData);
+</script>
+
+</body>
+</html>

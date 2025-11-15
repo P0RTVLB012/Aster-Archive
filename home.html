@@ -269,6 +269,7 @@
     <!-- Sidebar -->
     <div class="sidebar">
         <div class="sidebar-icon active" id="games-btn" title="Game Archive">🎮</div>
+        <div class="sidebar-icon" id="bud-btn" title="The Bud">🌱</div>
         <div class="sidebar-icon" id="console-btn" title="Console">📋</div>
 
         <div class="user-info">
@@ -451,6 +452,11 @@ window.addEventListener('DOMContentLoaded', function() {
 document.getElementById('games-btn').addEventListener('click', function() {
     switchView('games');
     addLog('Switched to Game Archive', 'info');
+});
+
+document.getElementById('bud-btn').addEventListener('click', function() {
+    window.location.href = 'bud/index.html';
+    addLog('Opened The Bud', 'info');
 });
 
 document.getElementById('console-btn').addEventListener('click', function() {

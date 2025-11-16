@@ -20,14 +20,12 @@
             color: #A78BFA;
         }
 
-        /* Main Container */
         .container {
             display: flex;
             width: 100%;
             height: 100%;
         }
 
-        /* Sidebar */
         .sidebar {
             width: 80px;
             height: 100%;
@@ -89,7 +87,6 @@
             background: rgba(255, 68, 68, 0.3);
         }
 
-        /* Content Area */
         .content {
             flex: 1;
             height: 100%;
@@ -109,7 +106,6 @@
             flex-direction: column;
         }
 
-        /* Header */
         .header {
             text-align: center;
             margin-bottom: 40px;
@@ -126,7 +122,6 @@
             color: #888;
         }
 
-        /* Games Grid */
         .games-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -171,7 +166,6 @@
             margin-bottom: 20px;
         }
 
-        /* Footer */
         .footer {
             text-align: center;
             padding: 20px;
@@ -180,7 +174,6 @@
             font-size: 12px;
         }
 
-        /* Console */
         .console-container {
             max-width: 1000px;
             margin: 0 auto;
@@ -262,7 +255,6 @@
             color: #ff4444;
         }
 
-        /* The Bud Styles */
         #bud-view {
             padding: 0;
         }
@@ -285,17 +277,11 @@
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
         }
 
-        .bud-todo-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-
         .bud-todo-header h2 {
             color: #C4B5FD;
             font-size: 24px;
             text-shadow: 0 0 10px rgba(139, 92, 246, 0.5);
+            margin-bottom: 15px;
         }
 
         .bud-add-todo {
@@ -314,10 +300,6 @@
             outline: none;
         }
 
-        .bud-add-todo input::placeholder {
-            color: #888;
-        }
-
         .bud-add-todo button {
             padding: 10px 20px;
             background: #A78BFA;
@@ -331,7 +313,6 @@
 
         .bud-add-todo button:hover {
             background: #8B5CF6;
-            transform: translateY(-2px);
         }
 
         .bud-todo-list {
@@ -381,11 +362,6 @@
             border-radius: 5px;
             color: #ff4444;
             cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .bud-todo-item button:hover {
-            background: rgba(255, 68, 68, 0.4);
         }
 
         .bud-spacer {
@@ -422,11 +398,6 @@
             color: #111;
             font-weight: bold;
             cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .bud-add-link-btn:hover {
-            background: #8B5CF6;
         }
 
         .bud-links-grid {
@@ -517,7 +488,6 @@
         .bud-modal-content h3 {
             color: #C4B5FD;
             margin-bottom: 20px;
-            text-shadow: 0 0 10px rgba(139, 92, 246, 0.5);
         }
 
         .bud-modal-content input {
@@ -543,7 +513,6 @@
             border-radius: 5px;
             font-weight: bold;
             cursor: pointer;
-            transition: all 0.3s;
         }
 
         .bud-modal-buttons .save {
@@ -561,7 +530,6 @@
 <body>
 
 <div class="container">
-    <!-- Sidebar -->
     <div class="sidebar">
         <div class="sidebar-icon active" id="games-btn" title="Game Archive">🎮</div>
         <div class="sidebar-icon" id="bud-btn" title="The Bud">🌱</div>
@@ -574,9 +542,7 @@
         </div>
     </div>
 
-    <!-- Content Area -->
     <div class="content">
-        <!-- Game Archive View -->
         <div class="view active" id="games-view">
             <div class="header">
                 <h1>Aster Archive</h1>
@@ -597,12 +563,34 @@
                 </a>
             </div>
 
-            <div class="footer">
-                made by Cyrus
+            <div class="footer">made by Cyrus</div>
+        </div>
+
+        <div class="view" id="bud-view">
+            <div class="bud-container">
+                <div class="bud-todo-section">
+                    <div class="bud-todo-header">
+                        <h2>📝 To-Do List</h2>
+                    </div>
+                    <div class="bud-add-todo">
+                        <input type="text" id="bud-todo-input" placeholder="Add a new task..." />
+                        <button id="bud-add-todo-btn">Add</button>
+                    </div>
+                    <div class="bud-todo-list" id="bud-todo-list"></div>
+                </div>
+
+                <div class="bud-spacer"></div>
+
+                <div class="bud-links-section">
+                    <div class="bud-links-header">
+                        <h2>🔗 Pinned Links</h2>
+                        <button class="bud-add-link-btn" id="bud-add-link-btn">+ Add Link</button>
+                    </div>
+                    <div class="bud-links-grid" id="bud-links-grid"></div>
+                </div>
             </div>
         </div>
 
-        <!-- Console View -->
         <div class="view" id="console-view">
             <div class="console-container">
                 <div class="console-header">
@@ -615,7 +603,7 @@
                 <div class="console-log" id="console-log">
                     <div class="log-entry info">
                         <span class="log-time">--:--:--</span>
-                        <span class="log-message">Console initialized. Waiting for activity...</span>
+                        <span class="log-message">Console initialized.</span>
                     </div>
                 </div>
             </div>
@@ -623,10 +611,22 @@
     </div>
 </div>
 
-<!-- Firebase SDK -->
+<div class="bud-modal" id="bud-link-modal">
+    <div class="bud-modal-content">
+        <h3>Add New Link</h3>
+        <input type="text" id="bud-link-name-input" placeholder="Link name" />
+        <input type="text" id="bud-link-url-input" placeholder="URL" />
+        <input type="text" id="bud-link-icon-input" placeholder="Emoji" />
+        <div class="bud-modal-buttons">
+            <button class="save" id="bud-save-link-btn">Save</button>
+            <button class="cancel" id="bud-cancel-link-btn">Cancel</button>
+        </div>
+    </div>
+</div>
+
 <script type="module">
-  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-  import { getFirestore, doc, setDoc, getDoc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js';
+  import { getFirestore, doc, setDoc, getDoc } from 'https://www.gstatic.com/firebasejs/12.5.0/firebase-firestore.js';
 
   const firebaseConfig = {
     apiKey: "AIzaSyDSfxXsKJxJuIVdJ2PJH_sT-yuCfnIcy48",
@@ -634,29 +634,27 @@
     projectId: "the-aster-archive",
     storageBucket: "the-aster-archive.firebasestorage.app",
     messagingSenderId: "477660520567",
-    appId: "1:477660520567:web:db80ea1995cb9a594b6672"
+    appId: "1:477660520567:web:082a0fbe81396cd54b6672",
+    measurementId: "G-8X69EF1421"
   };
 
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
-  // Make Firebase available globally
   window.asterDB = db;
-  window.asterFirestore = { doc, setDoc, getDoc, updateDoc };
-
-  console.log('Firebase initialized in home.html');
+  window.asterFirestore = { doc, setDoc, getDoc };
 </script>
 
 <script>
 let logEntries = [];
 let currentUsername = '';
+let budTodos = [];
+let budLinks = [];
 
-// Logging function
 function addLog(message, type = 'info') {
     const now = new Date();
     const time = now.toLocaleTimeString();
-    const entry = { time, message, type };
-    logEntries.push(entry);
+    logEntries.push({ time, message, type });
 
     const logDiv = document.getElementById('console-log');
     if (logDiv) {
@@ -668,64 +666,6 @@ function addLog(message, type = 'info') {
     }
 }
 
-// Save game progress to Firebase
-async function saveGameProgress(gameName, saveData) {
-    if (!currentUsername) return;
-
-    try {
-        const { doc, setDoc } = window.asterFirestore;
-        await setDoc(doc(window.asterDB, 'saves', `${currentUsername}_${gameName}`), {
-            username: currentUsername,
-            game: gameName,
-            data: saveData,
-            lastSaved: new Date().toISOString()
-        });
-
-        addLog(`Game progress saved: ${gameName}`, 'success');
-        return true;
-    } catch (error) {
-        addLog(`Failed to save ${gameName}: ${error.message}`, 'error');
-        console.error('Save error:', error);
-        return false;
-    }
-}
-
-// Load game progress from Firebase
-async function loadGameProgress(gameName) {
-    if (!currentUsername) return null;
-
-    try {
-        const { doc, getDoc } = window.asterFirestore;
-        const saveDoc = await getDoc(doc(window.asterDB, 'saves', `${currentUsername}_${gameName}`));
-
-        if (saveDoc.exists()) {
-            addLog(`Game progress loaded: ${gameName}`, 'success');
-            return saveDoc.data().data;
-        } else {
-            addLog(`No saved data found for ${gameName}`, 'info');
-            return null;
-        }
-    } catch (error) {
-        addLog(`Failed to load ${gameName}: ${error.message}`, 'error');
-        console.error('Load error:', error);
-        return null;
-    }
-}
-
-// Sync all saves
-async function syncAllSaves() {
-    addLog('Syncing all game saves...', 'info');
-
-    // This is a placeholder - games will call saveGameProgress() when they need to save
-    // For now, just log that sync is available
-    addLog('Sync complete - saves are stored in Firebase', 'success');
-}
-
-// Make save/load functions available globally for games to use
-window.asterSave = saveGameProgress;
-window.asterLoad = loadGameProgress;
-
-// Check if user is logged in
 window.addEventListener('DOMContentLoaded', function() {
     currentUsername = localStorage.getItem('aster_currentUser');
     const isAdmin = localStorage.getItem('aster_isAdmin') === 'true';
@@ -735,26 +675,22 @@ window.addEventListener('DOMContentLoaded', function() {
         return;
     }
 
-    // Display username
     document.getElementById('sidebar-username').textContent = currentUsername + (isAdmin ? ' (Admin)' : '');
-
     addLog(`User ${currentUsername} logged in`, 'success');
-    addLog('Game library loaded', 'info');
-    addLog('Firebase save system active - progress syncs across devices', 'success');
 });
 
-// Sidebar navigation
-document.getElementById('games-btn').addEventListener('click', function() {
+document.getElementById('games-btn').addEventListener('click', () => {
     switchView('games');
     addLog('Switched to Game Archive', 'info');
 });
 
-document.getElementById('bud-btn').addEventListener('click', function() {
-    window.location.href = 'bud/index.html';
+document.getElementById('bud-btn').addEventListener('click', () => {
+    switchView('bud');
     addLog('Opened The Bud', 'info');
+    loadBudData();
 });
 
-document.getElementById('console-btn').addEventListener('click', function() {
+document.getElementById('console-btn').addEventListener('click', () => {
     switchView('console');
     addLog('Opened Activity Console', 'info');
 });
@@ -766,41 +702,168 @@ function switchView(view) {
     if (view === 'games') {
         document.getElementById('games-btn').classList.add('active');
         document.getElementById('games-view').classList.add('active');
+    } else if (view === 'bud') {
+        document.getElementById('bud-btn').classList.add('active');
+        document.getElementById('bud-view').classList.add('active');
     } else if (view === 'console') {
         document.getElementById('console-btn').classList.add('active');
         document.getElementById('console-view').classList.add('active');
     }
 }
 
-// Sync saves button
-document.getElementById('sync-saves').addEventListener('click', function() {
-    syncAllSaves();
-});
-
-// Clear log
-document.getElementById('clear-log').addEventListener('click', function() {
+document.getElementById('clear-log').addEventListener('click', () => {
     const logDiv = document.getElementById('console-log');
     logDiv.innerHTML = '<div class="log-entry info"><span class="log-time">--:--:--</span><span class="log-message">Log cleared.</span></div>';
     logEntries = [];
-    addLog('Console log cleared by user', 'info');
+    addLog('Console log cleared', 'info');
 });
 
-// Logout
-document.getElementById('logout-btn').addEventListener('click', function() {
-    const username = localStorage.getItem('aster_currentUser');
+document.getElementById('logout-btn').addEventListener('click', () => {
     localStorage.removeItem('aster_currentUser');
     localStorage.removeItem('aster_isAdmin');
-    addLog(`User ${username} logged out`, 'info');
     window.location.href = 'index.html';
 });
 
-// Track game clicks
-document.querySelectorAll('.game-card').forEach(card => {
-    card.addEventListener('click', function(e) {
-        const gameName = this.getAttribute('data-game');
-        addLog(`Loading game: ${gameName}`, 'success');
-        addLog(`Game saves are stored in Firebase for ${currentUsername}`, 'info');
+async function loadBudData() {
+    try {
+        const { doc, getDoc } = window.asterFirestore;
+
+        const todoDoc = await getDoc(doc(window.asterDB, 'bud', `${currentUsername}_todos`));
+        if (todoDoc.exists()) budTodos = todoDoc.data().todos || [];
+
+        const linksDoc = await getDoc(doc(window.asterDB, 'bud', `${currentUsername}_links`));
+        if (linksDoc.exists()) budLinks = linksDoc.data().links || [];
+
+        renderBudTodos();
+        renderBudLinks();
+        addLog('Loaded The Bud data', 'success');
+    } catch (error) {
+        addLog('Failed to load Bud data', 'error');
+    }
+}
+
+async function saveBudTodos() {
+    try {
+        const { doc, setDoc } = window.asterFirestore;
+        await setDoc(doc(window.asterDB, 'bud', `${currentUsername}_todos`), {
+            username: currentUsername,
+            todos: budTodos,
+            lastSaved: new Date().toISOString()
+        });
+        addLog('Saved todos', 'success');
+    } catch (error) {
+        addLog('Failed to save todos', 'error');
+    }
+}
+
+async function saveBudLinks() {
+    try {
+        const { doc, setDoc } = window.asterFirestore;
+        await setDoc(doc(window.asterDB, 'bud', `${currentUsername}_links`), {
+            username: currentUsername,
+            links: budLinks,
+            lastSaved: new Date().toISOString()
+        });
+        addLog('Saved links', 'success');
+    } catch (error) {
+        addLog('Failed to save links', 'error');
+    }
+}
+
+function renderBudTodos() {
+    const todoList = document.getElementById('bud-todo-list');
+    todoList.innerHTML = '';
+
+    budTodos.forEach((todo, index) => {
+        const todoItem = document.createElement('div');
+        todoItem.className = `bud-todo-item ${todo.completed ? 'completed' : ''}`;
+        todoItem.innerHTML = `
+            <input type="checkbox" ${todo.completed ? 'checked' : ''}>
+            <span>${todo.text}</span>
+            <button>×</button>
+        `;
+
+        todoItem.querySelector('input').addEventListener('change', () => {
+            budTodos[index].completed = !budTodos[index].completed;
+            renderBudTodos();
+            saveBudTodos();
+        });
+
+        todoItem.querySelector('button').addEventListener('click', () => {
+            budTodos.splice(index, 1);
+            renderBudTodos();
+            saveBudTodos();
+        });
+
+        todoList.appendChild(todoItem);
     });
+}
+
+function renderBudLinks() {
+    const linksGrid = document.getElementById('bud-links-grid');
+    linksGrid.innerHTML = '';
+
+    budLinks.forEach((link, index) => {
+        const linkItem = document.createElement('a');
+        linkItem.className = 'bud-link-item';
+        linkItem.href = link.url;
+        linkItem.target = '_blank';
+        linkItem.innerHTML = `
+            <button class="bud-remove-link">×</button>
+            <div class="bud-link-icon">${link.icon}</div>
+            <div class="bud-link-name">${link.name}</div>
+        `;
+
+        linkItem.querySelector('button').addEventListener('click', (e) => {
+            e.preventDefault();
+            budLinks.splice(index, 1);
+            renderBudLinks();
+            saveBudLinks();
+        });
+
+        linksGrid.appendChild(linkItem);
+    });
+}
+
+document.getElementById('bud-add-todo-btn').addEventListener('click', () => {
+    const input = document.getElementById('bud-todo-input');
+    const text = input.value.trim();
+
+    if (text) {
+        budTodos.push({ text, completed: false });
+        input.value = '';
+        renderBudTodos();
+        saveBudTodos();
+    }
+});
+
+document.getElementById('bud-todo-input').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') document.getElementById('bud-add-todo-btn').click();
+});
+
+document.getElementById('bud-add-link-btn').addEventListener('click', () => {
+    document.getElementById('bud-link-modal').classList.add('active');
+});
+
+document.getElementById('bud-cancel-link-btn').addEventListener('click', () => {
+    document.getElementById('bud-link-modal').classList.remove('active');
+});
+
+document.getElementById('bud-save-link-btn').addEventListener('click', () => {
+    const name = document.getElementById('bud-link-name-input').value.trim();
+    const url = document.getElementById('bud-link-url-input').value.trim();
+    const icon = document.getElementById('bud-link-icon-input').value.trim() || '🔗';
+
+    if (name && url) {
+        budLinks.push({ name, url, icon });
+        renderBudLinks();
+        saveBudLinks();
+
+        document.getElementById('bud-link-name-input').value = '';
+        document.getElementById('bud-link-url-input').value = '';
+        document.getElementById('bud-link-icon-input').value = '';
+        document.getElementById('bud-link-modal').classList.remove('active');
+    }
 });
 </script>
 
